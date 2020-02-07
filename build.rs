@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::env;
-
+use std::path::Path;
 ///////////////////////////////////////////////////////////////////////////////
 // UTILS - ENVIROMENT
 ///////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
 fn build() {
     // LINK
     for name in LIBS {
-        println!("cargo:rustc-link-lib=dylib={}", name);
+        println!("cargo:rustc-link-lib={}", name);
     }
     // CODEGEN
     {
@@ -92,6 +92,7 @@ fn build() {
             // todo maybe put headers to repo instead of linking against system ones
             bindgen::Builder::default()
                 .header("headers.h")
+                .clang_arg(r"-IC:\Users\andyb\Downloads\ffmpeg-4.2.2-win64-dev\include")
                 .parse_callbacks(Box::new(ignored_macros.clone()))
                 .layout_tests(false)
                 .rustfmt_bindings(true)
@@ -103,9 +104,12 @@ fn build() {
                 .expect("Couldn't write bindings!");
         }
     }
+
+    let include_path = Path::new(r"C:\Users\andyb\Downloads\ffmpeg-4.2.2-win64-dev\include");
     // COMPILE CBITS
     cc::Build::new()
         .file("cbits/defs.c")
+        .include(include_path)
         .compile("cbits");
 }
 
